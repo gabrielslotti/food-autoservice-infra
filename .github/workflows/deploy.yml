@@ -2,9 +2,7 @@ name: Deploy to EKS with Terraform
 
 on:
   push:
-    branches:
-      - main
-        master
+    branches: [ "main" ]
 
 jobs:
   terraform:
@@ -17,7 +15,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: "1.3.0"
+          terraform_version: "1.10.3"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -53,8 +51,9 @@ jobs:
 
       - name: Deploy app to EKS
         run: |
-          kubectl apply -f kubernetes/deployment.yaml
-          kubectl apply -f kubernetes/service.yaml
+          kubectl apply -f k8s/app-deployment.yaml
+          kubectl set env deployment/food-deployment DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} DB_BASE=${{ secrets.DB_BASE }} DB_USER=${{ secrets.DB_USER }} DB_PASS=${{ secrets.DB_PASS }}
+          kubectl apply -f k8s/app-service.yaml
 
       - name: Monitor Deployment Status
         run: |
